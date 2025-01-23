@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: categorytree
+
+server:
+  port: 8081
+
+category:
+  service:
+    url: ${CATEGORY_SERVICE_URL}
