@@ -1,0 +1,74 @@
+services:
+  category_db:
+    image: postgres:latest
+    container_name: category_db
+    environment:
+      POSTGRES_DB: category_db
+      POSTGRES_USER: amihady
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - category_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  category:
+    build:
+      context: ../category
+      dockerfile: Dockerfile
+    container_name: category
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://category_db:5432/category_db
+      SPRING_DATASOURCE_USERNAME: amihady
+      SPRING_DATASOURCE_PASSWORD: password
+    networks:
+      - app-network
+    depends_on:
+      - category_db
+    restart: always 
+
+
+  categorytree:
+    build:
+      context: ../categorytree
+      dockerfile: Dockerfile
+    container_name: categorytree
+    ports:
+      - "8081:8081"
+    environment:
+      CATEGORY_SERVICE_URL: http://category:8080/api
+    networks:
+      - app-network
+    depends_on:
+      - category_db
+      - category
+    restart: always 
+
+  telegram-service:
+    build:
+      context: ../telegram-service
+      dockerfile: Dockerfile
+    container_name: telegram-service
+    environment:
+      CATEGORY_SERVICE_URL: http://category:8080/api
+      CATEGORYTREE_SERVICE_URL: http://categorytree:8081
+    networks:
+      - app-network
+    depends_on:
+      - category_db
+      - category
+      - categorytree
+    restart: always 
+
+
+
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  category_db_data: 
