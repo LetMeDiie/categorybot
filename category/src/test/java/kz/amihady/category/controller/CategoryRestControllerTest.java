@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(CategoryRestController.class)
 public class CategoryRestControllerTest {
 
-    private static final String BASE_URL = "/category/{userId}";
+    private static final String BASE_URL = "/api/{userId}";
     private static final Long USER_ID = 1L;
     @Autowired
     MockMvc mockMvc;

@@ -36,3 +36,4 @@ public class CategoryExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 }
+

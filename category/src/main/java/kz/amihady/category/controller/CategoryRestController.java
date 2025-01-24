@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level= AccessLevel.PRIVATE,makeFinal = true)
-@RequestMapping(value ="/category/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value ="/api/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
 
 public class CategoryRestController {
 
