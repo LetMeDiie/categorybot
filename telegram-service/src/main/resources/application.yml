@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: telegrambot
+
+
+
+service:
+  url:
+    category: ${CATEGORY_SERVICE_URL}
+    categoryTree: ${CATEGORYTREE_SERVICE_URL}
+
+
+
+bot:
+  name: Category_test_work_bot
+  token: 8147276690:AAGqDPEhfRUXRf7XYOhw5Ezyl1kvWSxr4nQ
+
+
+
