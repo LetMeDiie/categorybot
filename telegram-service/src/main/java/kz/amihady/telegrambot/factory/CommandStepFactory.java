@@ -1,6 +1,7 @@
 package kz.amihady.telegrambot.factory;
 
 import com.sun.nio.sctp.IllegalReceiveException;
+import jakarta.annotation.PostConstruct;
 import kz.amihady.telegrambot.feign.CategoryServiceClient;
 import kz.amihady.telegrambot.service.command.step.Step;
 import kz.amihady.telegrambot.service.command.step.StepContext;
@@ -13,40 +14,50 @@ import kz.amihady.telegrambot.utils.CommandType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
 @Component
-@FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
-@RequiredArgsConstructor
 public class CommandStepFactory {
-    CategoryServiceClient categoryServiceClient;
-    CategoryRequestFactory categoryRequestFactory;
+    @Autowired
+    private  CategoryServiceClient categoryServiceClient;
 
-    public  Step [] createStepsForCommand(CommandType commandType){
-        //будем создавать для команды лишь первые степы
-        if(commandType == CommandType.ADDELEMENT) {
-            return  addCommandStepFactor();
-        }
-        if(commandType == CommandType.REMOVEELEMENT){
-            return removeCommandStepFactor();
-        }
-        throw new IllegalReceiveException("Ошибка в в коде");
+    @Autowired
+    private  CategoryRequestFactory categoryRequestFactory;
+    private Map<CommandType, Supplier<Step[]>> stepCreators;
+
+
+    @PostConstruct
+    private void initStepCreators() {
+        stepCreators = new HashMap<>();
+        stepCreators.put(CommandType.ADDELEMENT, this::createAddElementSteps);
+        stepCreators.put(CommandType.REMOVEELEMENT, this::createRemoveElementSteps);
     }
 
-    private Step[] addCommandStepFactor(){
-        Step [] steps = new Step[3];
-        StepContext stepContext = new StepContext();
-        steps[0]= new AddCommandFirstStep(stepContext);
-        steps[1]= new AddCommandSecondStep(stepContext,categoryRequestFactory);
-        steps[2]= new AddCommandThirdStep(stepContext,categoryServiceClient);
-        return steps;
+    public Step[] createStepsForCommand(CommandType commandType) {
+        return stepCreators.getOrDefault(commandType, () -> {
+            throw new IllegalReceiveException("Ошибка в коде: неизвестная команда " + commandType);
+        }).get();
     }
 
-    private Step [] removeCommandStepFactor(){
-        Step [] steps = new Step[2];
+    private Step[] createAddElementSteps() {
         StepContext stepContext = new StepContext();
-        steps[0] = new RemoveFirstStep(stepContext);
-        steps[1] = new RemoveSecondStep(stepContext,categoryServiceClient);
-        return steps;
+        return new Step[]{
+                new AddCommandFirstStep(stepContext),
+                new AddCommandSecondStep(stepContext, categoryRequestFactory),
+                new AddCommandThirdStep(stepContext, categoryServiceClient)
+        };
+    }
+
+    private Step[] createRemoveElementSteps() {
+        StepContext stepContext = new StepContext();
+        return new Step[]{
+                new RemoveFirstStep(stepContext),
+                new RemoveSecondStep(stepContext, categoryServiceClient)
+        };
     }
 }
